@@ -1,17 +1,29 @@
 from pathlib import Path
+import os
+import shutil
 
 import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
 
 
-TESSERACT_PATH = Path(
+# Support both local Windows development and Linux deployment (Render).
+WINDOWS_TESSERACT_PATH = Path(
     r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 )
 
-pytesseract.pytesseract.tesseract_cmd = str(
-    TESSERACT_PATH
-)
+TESSERACT_PATH = os.getenv("TESSERACT_CMD")
+
+if TESSERACT_PATH:
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+elif WINDOWS_TESSERACT_PATH.exists():
+    pytesseract.pytesseract.tesseract_cmd = str(
+        WINDOWS_TESSERACT_PATH
+    )
+elif shutil.which("tesseract"):
+    pytesseract.pytesseract.tesseract_cmd = shutil.which(
+        "tesseract"
+    )
 
 
 IMAGE_EXTENSIONS = {
