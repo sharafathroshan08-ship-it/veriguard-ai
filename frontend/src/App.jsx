@@ -488,9 +488,20 @@ function App() {
       setDocumentId(String(id));
       setUploading(false);
 
-      /* Verify */
+      /* -------------------------------------------------
+         MOVE TO FORENSICS IMMEDIATELY
+
+         The verification request is intentionally kept
+         asynchronous so the judge sees the live forensic
+         pipeline while the real backend performs OCR,
+         field checks, visual analysis, Gemini reasoning,
+         risk synthesis, and history persistence.
+      ------------------------------------------------- */
+      setPage("forensics");
+      setTool("telemetry");
       setVerifying(true);
 
+      /* Verify in the background */
       const verificationResponse =
         await verifyDocument(id);
 
@@ -503,12 +514,18 @@ function App() {
       setPipelineStep(
         PIPELINE.length - 1
       );
-
       setVerifying(false);
 
-      /* Page 2 */
-      setPage("forensics");
-      setTool("telemetry");
+      /* -------------------------------------------------
+         Give the forensic screen a brief completed state
+         before projecting the final result. This keeps the
+         transition visible without adding meaningful delay.
+      ------------------------------------------------- */
+      await new Promise((resolve) =>
+        window.setTimeout(resolve, 900)
+      );
+
+      setPage("report");
     } catch (analysisError) {
       console.error(
         "Analysis failed:",
